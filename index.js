@@ -23,7 +23,8 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-
+    
+    const userCollection = client.db('catro').collection('users')
     const patCollection = client.db('catro').collection('pat')
     const adoptCollection = client.db('catro').collection('adopted')
     const campaigntCollection = client.db('catro').collection('campaign')
@@ -39,13 +40,28 @@ async function run() {
       const result = await patCollection.findOne(query)
       res.send(result)
     })
+
+
+    app.post('/users', async (req, res) => {
+      // user create here when register and check is user exist or not
+      const user = req.body;
+      const email = req.body.email;
+      const query = { email: email }
+      const exist = await userCollection.findOne(query)
+      if (exist) {
+        return res.status(401).send({ message: "User already exists" });
+      }
+      const result = await userCollection.insertOne(user)
+      res.send(result)
+    })
+
     app.get('/search', async (req, res) => {
 
       let search = '';
       if (req.query.q) {
         search = req.query.q
       }
-      console.log(search)
+     
       const mySort = { date: -1 }
       const result = await patCollection.find({
         title: { $regex: search, $options: 'i' }
@@ -76,13 +92,12 @@ async function run() {
          const info={
            name:'shahadat'
          }
-         console.log(info)
          const result= await campaigntCollection.insertOne(info)
          res.send(result)
     })
     app.post("/create-payment-intent", async (req, res) => {
       const  price  = req.body;
-      console.log(price.sum)
+      
       const int1=price.sum
       const amount=parseInt(int1*100);
       
@@ -101,7 +116,7 @@ async function run() {
     app.post('/jwt', async (req, res) => {
       // token provider api
       const user = req.body;
-      console.log(user)
+      
       const token = jwt.sign(user, process.env.DB_TOKEN, { expiresIn: '2h' });
       res.send({ token })
     })
