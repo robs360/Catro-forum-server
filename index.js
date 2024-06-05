@@ -1,6 +1,8 @@
 const express = require("express")
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
+const stripe = require("stripe")('sk_test_51PM2J8EJ4sCmNGOlOrilnBC6h4FDLil1YexvOYtxhLNNP6zot1QG6atrB6DIV7YUg0KXqhAqE4o5zwL5eneckCvN000419BKJj');
 const port = process.env.PORT || 5000
 require('dotenv').config()
 app.use(cors())
@@ -24,6 +26,7 @@ async function run() {
 
     const patCollection = client.db('catro').collection('pat')
     const adoptCollection = client.db('catro').collection('adopted')
+    const campaigntCollection = client.db('catro').collection('campaign')
 
     app.get('/pat', async (req, res) => {
       const mySort = { date: -1 }
@@ -57,6 +60,52 @@ async function run() {
          const result= await adoptCollection.insertOne(info)
          res.send(result)
     })
+
+    app.get('/campaign', async (req, res) => {
+      const result = await campaigntCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/campaign/:id', async (req, res) => {
+      const id=req.params.id
+      const query = { _id: new ObjectId(id) };
+      const result = await campaigntCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.post('/campaign', async (req,res)=>{
+         const info={
+           name:'shahadat'
+         }
+         console.log(info)
+         const result= await campaigntCollection.insertOne(info)
+         res.send(result)
+    })
+    app.post("/create-payment-intent", async (req, res) => {
+      const  price  = req.body;
+      console.log(price.sum)
+      const int1=price.sum
+      const amount=parseInt(int1*100);
+      
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+    })
+
+    // Jwt api
+    app.post('/jwt', async (req, res) => {
+      // token provider api
+      const user = req.body;
+      console.log(user)
+      const token = jwt.sign(user, process.env.DB_TOKEN, { expiresIn: '2h' });
+      res.send({ token })
+    })
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
