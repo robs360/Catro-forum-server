@@ -68,7 +68,7 @@ async function run() {
       const result = await patCollection.findOne(query)
       res.send(result)
     })
-    app.put('/updatepet/:id',async (req,res)=>{
+    app.put('/updatepet/:id',verifyToken,async (req,res)=>{
          const id=req.params.id;
          const update=req.body;
          
@@ -89,6 +89,23 @@ async function run() {
        }
        const result=await patCollection.updateOne(query,updateUser,options)
        res.send(result)
+    })
+   app.post('/createcamp',async (req,res)=>{
+       const info=req.body;
+       const result=await campaigntCollection.insertOne(info)
+       res.send(result)
+   })
+    app.patch('/update/status/:id',async (req,res)=>{
+        const id=req.params.id;
+        const query={_id:new ObjectId(id)}
+        const options={upsert:true}
+        const updateStatus={
+          $set:{
+             status:'Adoptd',
+          }
+        }
+        const result =await patCollection.updateOne(query,updateStatus,options)
+        res.send(result)
     })
     app.post('/addpet', async (req,res)=>{
          const info=req.body;
