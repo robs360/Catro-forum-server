@@ -28,8 +28,29 @@ async function run() {
     const patCollection = client.db('catro').collection('pat')
     const adoptCollection = client.db('catro').collection('adopted')
     const campaigntCollection = client.db('catro').collection('campaign')
+    const verifyToken = (req, res, next) => {
 
+      //  console.log("it is content of headers",req.headers.authorization)
+      if (!req.headers.authorization) {
+        console.log("is it undefined", req.headers.authorization)
+        return res.status(401).send({ message: "Forbidden access" })
+      }
+      const token = req.headers.authorization.split(' ')[1];
+
+      jwt.verify(token, process.env.DB_TOKEN, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: "Unauthorize access"})
+        }
+        req.decoded = decoded;
+        next()
+      })
+    }
     app.get('/pat', async (req, res) => {
+      const mySort = { date: -1 }
+      const result = await patCollection.find().sort(mySort).toArray()
+      res.send(result)
+    })
+    app.get('/pet', verifyToken, async (req, res) => {
       const mySort = { date: -1 }
       const result = await patCollection.find().sort(mySort).toArray()
       res.send(result)
@@ -41,7 +62,12 @@ async function run() {
       res.send(result)
     })
 
-
+    app.post('/addpet', async (req,res)=>{
+         const info=req.body;
+         console.log(info)
+         const result=await patCollection.insertOne(info)
+         res.send(result)
+    })
     app.post('/users', async (req, res) => {
       // user create here when register and check is user exist or not
       const user = req.body;
@@ -69,7 +95,7 @@ async function run() {
 
       res.send(result)
     })
-
+    
     app.post('/adopt', async (req,res)=>{
          const info=req.body
          console.log(info)
