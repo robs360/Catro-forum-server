@@ -50,8 +50,15 @@ async function run() {
       const result = await patCollection.find().sort(mySort).toArray()
       res.send(result)
     })
+
+    app.delete('/petdelete/:id',async (req,res)=>{
+          const id=req.params.id;
+          const query = { _id: new ObjectId(id) }
+          const result=await patCollection.deleteOne(query)
+          res.send()
+    })
     app.get('/pet', verifyToken, async (req, res) => {
-      const mySort = { date: -1 }
+      const mySort = {date: -1}
       const result = await patCollection.find().sort(mySort).toArray()
       res.send(result)
     })
@@ -61,7 +68,28 @@ async function run() {
       const result = await patCollection.findOne(query)
       res.send(result)
     })
-
+    app.put('/updatepet/:id',async (req,res)=>{
+         const id=req.params.id;
+         const update=req.body;
+         
+         const query={_id:new ObjectId(id)}
+         const options={upsert:true}
+         const updateUser={
+          $set:{
+                name:update.petName,
+                category:update.petCategory,
+                age:update.petAge,
+                date:update.date,
+                location:update.location,
+                image:update.image,
+                email:update.email,
+                title:update.shortDes,
+                description:update.description,
+          }
+       }
+       const result=await patCollection.updateOne(query,updateUser,options)
+       res.send(result)
+    })
     app.post('/addpet', async (req,res)=>{
          const info=req.body;
          console.log(info)
