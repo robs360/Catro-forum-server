@@ -208,6 +208,10 @@ async function run() {
       const result = await campaigntCollection.find().toArray()
       res.send(result)
     })
+    app.get('/protected_campaign',verifyToken, async (req, res) => {
+      const result = await campaigntCollection.find().toArray()
+      res.send(result)
+    })
     app.get('/campaign/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) };
