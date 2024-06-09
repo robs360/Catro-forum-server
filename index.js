@@ -100,7 +100,7 @@ async function run() {
           image: update.image,
           email: update.email,
           title: update.shortDes,
-          description: update.description,
+          value1: update.value1,
         }
       }
       const result = await patCollection.updateOne(query, updateUser, options)
