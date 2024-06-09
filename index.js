@@ -239,7 +239,12 @@ async function run() {
       const result = await campaigntCollection.find().toArray()
       res.send(result)
     })
-
+    app.delete('/admin/campaign/:id',async (req,res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)}
+      const result=await campaigntCollection.deleteOne(query)
+      res.send(result)
+    })
     app.post("/create-payment-intent", async (req, res) => {
       const price = req.body;
 
